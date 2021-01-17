@@ -1,0 +1,11 @@
+{
+    "name": "aebd-webapp",
+    "version": "1.0.0",
+    "description": "RESTful API using Node.js Express Oracle DB",
+    "main": "server.js",
+    "author": "Oracle",
+    "license": "Apache",
+    "dependencies": {
+      "oracledb" : "^5"
+    }
+  }
