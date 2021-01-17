@@ -1,0 +1,39 @@
+version: '3'
+services:
+    oracle:
+        container_name: oracledb
+        image: store/oracle/database-enterprise:12.2.0.1
+        ports:
+            - 1521:1521
+            - 5500:5500
+            - 5501:5501
+            - 5502:5502
+        volumes:
+            - "./data/oracle:/ORCL"
+        env_file:
+            - ora.conf
+        networks:
+            - db
+    webapp:
+        image: webapp
+        build: 
+            dockerfile: Dockerfile
+            context: ./restapi
+        restart: always
+        container_name: aebd-webapp
+        ports:
+            - 3000:3000
+        env_file:
+            - restapi/envfile.list
+        networks:
+            - db
+    wrapper:
+        image: wrapper
+        build:
+            dockerfile: Dockerfile
+            context: ./wrapper
+        container_name: aebd-wrapper
+        networks:
+            - db
+networks:
+    db:

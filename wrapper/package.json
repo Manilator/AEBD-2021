@@ -1,0 +1,11 @@
+{
+    "name": "aebd-wrapper",
+    "version": "1.0.0",
+    "description": "Wrapper",
+    "main": "wrapper.js",
+    "author": "Oracle",
+    "license": "Apache",
+    "dependencies": {
+      "oracledb" : "^5"
+    }
+  }

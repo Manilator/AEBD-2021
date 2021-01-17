@@ -1,0 +1,6 @@
+[ol7_developer_nodejs8]
+name=Oracle Linux $releasever Node.js 8 Packages for Development and test ($basearch)
+baseurl=https://yum.oracle.com/repo/OracleLinux/OL7/developer_nodejs8/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
