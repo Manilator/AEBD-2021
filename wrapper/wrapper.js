@@ -5,14 +5,15 @@ var performance = {};
 var resources = {};
 var activity = {};
 var users = {};
+var id = {};
 
 async function sql_request(sql, connection, string) {
   try {
     let i;
     result = await connection.execute(sql);
-    console.log("Query results: ");
-    console.log(result.rows);
-    console.log(result);
+    // console.log("Query results: ");
+    // console.log(result.rows);
+    // console.log(result);
     i = 0;
     for (x of result.metaData) {
       switch (string) {
@@ -40,9 +41,9 @@ async function sql_array(sql, connection, string) {
   try {
     let i;
     result = await connection.execute(sql);
-    console.log("Query results: ");
-    console.log(result.rows);
-    console.log(result);
+    // console.log("Query results: ");
+    // console.log(result.rows);
+    // console.log(result);
     for (x of result.rows) {
       let json = {}
       i = 0;
@@ -70,11 +71,34 @@ async function sql_array(sql, connection, string) {
   }
 }
 
+async function getID(connection) {
+  try {
+
+    result = await connection.execute('select max(id) from database');
+    let temp_id = result.rows[0][0]
+    if (temp_id === null)
+    id = 0;
+    else
+    id = temp_id+1;
+  } catch(e) {
+    console.log(e);
+  }
+}
+
+async function insertData(sql, connection) {
+  try {
+    result = await connection.execute(sql);
+    console.log(result);
+    console.log(sql)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 async function run() {
   try {
     let sql, result;
     let n = 20; // seconds
-    let id = 0;
 
     setInterval(async function (connection, extConnection) {
       connection = await oracledb.getConnection(dbConfig.internal);
@@ -86,7 +110,9 @@ async function run() {
         activity = { Requests: [] };
         resources = { Tablespaces: [] };
         users = {Users: [], Roles: []};
-        let i;
+        
+        await getID(extConnection);
+
         // 
         // PERFORMANCE
         // 
@@ -201,12 +227,39 @@ where to_date(v.FIRST_LOAD_TIME,'YYYY-MM-DD hh24:mi:ss')>sysdate-1`
         await sql_array(sql, connection, 'roles');
 
 
-        console.log(database);
-        console.log(performance);
-        console.log(resources);
-        console.log(activity);
-        console.log(users);
+        // console.log(database);
+        // console.log(performance);
+        // console.log(resources);
+        // console.log(activity);
+        //console.log(users);
 
+        //
+        // UPDATE EXTERNAL DATABASE
+        //
+
+        let users_json = {Users: []}
+        users_json.Users = users.Users;
+        let roles_json = {Roles: []}
+        roles_json.Roles = users.Roles;
+        // console.log('users_json = ' + JSON.stringify(users_json))
+        // console.log('roles_json = ' + JSON.stringify(roles_json))
+
+        // Users
+        // sql = `INSERT INTO users (id, users, roles)
+        // VALUES (${id},utl_raw.cast_to_raw('${JSON.stringify(users_json)}'),utl_raw.cast_to_raw('${JSON.stringify(roles_json)}'))`
+
+          sql = `DECLARE
+          users_json CLOB;
+          roles_json CLOB;
+        BEGIN
+          users_json := '${JSON.stringify(users_json)}';
+          roles_json := '${JSON.stringify(roles_json)}';
+        
+          INSERT INTO users (id, users, roles)
+          VALUES ( ${id}, users_json, roles_json);
+        END;`
+
+        await insertData(sql, extConnection);
 
       } catch (err) {
         console.log(err);
