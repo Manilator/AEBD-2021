@@ -5,7 +5,6 @@ var performance = {};
 var resources = {};
 var activity = {};
 var users = {};
-var id = {};
 
 async function sql_request(sql, connection, string) {
   try {
@@ -71,30 +70,6 @@ async function sql_array(sql, connection, string) {
   }
 }
 
-async function getID(connection) {
-  try {
-
-    result = await connection.execute('select max(id) from database');
-    let temp_id = result.rows[0][0]
-    if (temp_id === null)
-    id = 0;
-    else
-    id = temp_id+1;
-  } catch(e) {
-    console.log(e);
-  }
-}
-
-async function insertData(sql, connection) {
-  try {
-    result = await connection.execute(sql);
-    console.log(result);
-    console.log(sql)
-  } catch (error) {
-    console.log(error)
-  }
-}
-
 async function run() {
   try {
     let sql, result;
@@ -109,9 +84,7 @@ async function run() {
         performance = {};
         activity = { Requests: [] };
         resources = { Tablespaces: [] };
-        users = {Users: [], Roles: []};
-        
-        await getID(extConnection);
+        users = { Users: [], Roles: [] };
 
         // 
         // PERFORMANCE
@@ -199,11 +172,11 @@ async function run() {
         await sql_request(sql, connection, 'resources');
 
         //
-        // RESOURCES
+        // ACTIVITY
         //
 
-        // Number of processes
-        sql = `select count(*) "Number of processes" from V$session where status='ACTIVE'`
+        // Number of sessions
+        sql = `select count(*) "sessions" from V$session where status='ACTIVE'`
         await sql_request(sql, connection, 'activity');
 
         // History of sql requests
@@ -227,39 +200,61 @@ where to_date(v.FIRST_LOAD_TIME,'YYYY-MM-DD hh24:mi:ss')>sysdate-1`
         await sql_array(sql, connection, 'roles');
 
 
-        // console.log(database);
-        // console.log(performance);
-        // console.log(resources);
-        // console.log(activity);
-        //console.log(users);
+        console.log(database);
 
         //
         // UPDATE EXTERNAL DATABASE
         //
 
-        let users_json = {Users: []}
+        let users_json = { Users: [] }
         users_json.Users = users.Users;
-        let roles_json = {Roles: []}
+        let roles_json = { Roles: [] }
         roles_json.Roles = users.Roles;
-        // console.log('users_json = ' + JSON.stringify(users_json))
-        // console.log('roles_json = ' + JSON.stringify(roles_json))
+
 
         // Users
-        // sql = `INSERT INTO users (id, users, roles)
-        // VALUES (${id},utl_raw.cast_to_raw('${JSON.stringify(users_json)}'),utl_raw.cast_to_raw('${JSON.stringify(roles_json)}'))`
+        result = await extConnection.execute(
+          'insert into users (users, roles) values (:uv, :rv) returning id into :iv',
+          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, uv: JSON.stringify(users_json), rv: JSON.stringify(roles_json) },
+          { autoCommit: true });
+        let u_id = result.outBinds.iv[0];
 
-          sql = `DECLARE
-          users_json CLOB;
-          roles_json CLOB;
-        BEGIN
-          users_json := '${JSON.stringify(users_json)}';
-          roles_json := '${JSON.stringify(roles_json)}';
-        
-          INSERT INTO users (id, users, roles)
-          VALUES ( ${id}, users_json, roles_json);
-        END;`
 
-        await insertData(sql, extConnection);
+        let requests_json = { Requests: [] }
+        requests_json.Requests = activity.Requests;
+
+        // Activity
+        result = await extConnection.execute(
+          'insert into activity (sessions, sql_requests) values (:sv, :sqlv) returning id into :iv',
+          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, sv: activity['sessions'], sqlv: JSON.stringify(requests_json) },
+          { autoCommit: true });
+        let a_id = result.outBinds.iv[0];
+
+
+
+        let tables_json = { Tablespaces: [] }
+        tables_json.Tablespaces = resources.Tablespaces;
+        // Resources
+        result = await extConnection.execute(
+          'insert into resources (tablespaces, current_memory, max_memory, processes) values (:tv, :cv, :mv, :pv) returning id into :iv',
+          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, tv: JSON.stringify(tables_json), cv: resources['CURRENT SIZE'], mv: resources['MAXIMUM SIZE'], pv: resources['Number of processes'] },
+          { autoCommit: true });
+        let r_id = result.outBinds.iv[0];
+
+
+        // Performance
+        result = await extConnection.execute(
+          'insert into performance (cpus, cpu_usage, threads, time_consumed) values (:cv, :cuv, :tv, :tcv) returning id into :iv',
+          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, cv: performance['CPUS'], cuv: performance['CPU_USAGE'], tv: performance['THREADS'], tcv: performance['TIME_CONSUMED'] },
+          { autoCommit: true });
+        let p_id = result.outBinds.iv[0];
+
+
+        // Database
+        result = await extConnection.execute(
+          'insert into database (record_date, name, os, version, p_id, r_id, a_id, u_id) values (:rv, :nv, :ov, :vv, :pidv, :ridv, :aidv, :uidv) returning id into :iv',
+          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, rv: database['CURRENT DATE'], nv: database['NAME'], ov: database['PLATFORM_NAME'], vv: database['VERSION'], pidv: p_id, ridv: r_id, aidv: a_id, uidv: u_id },
+          { autoCommit: true });
 
       } catch (err) {
         console.log(err);
