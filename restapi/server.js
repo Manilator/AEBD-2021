@@ -15,27 +15,137 @@ var port = 3000;
 oracledb.outFormat = oracledb.OBJECT;
 
 // HTTP Method: GET
-// URI        : /bananas
-// Get all farmers' shipments
-app.get('/tablespaces', function (req, res) {
+// URI        : /database
+// Get last database record
+app.get('/database', function (req, res) {
   doGetConnection(res, function(err, connection) {
     if (err)
       return;
     connection.execute(
-      "select tablespace_name, con_id from cdb_tablespaces order by con_id",
+      `select record_date "Date", name "Name", os "OS", version "Version" from database where ROWNUM < 2`,
       function (err, result) {
         if (err) {
           res.set('Content-Type', 'application/json');
           res.status(500).send(JSON.stringify({
             status: 500,
-            message: "Error getting the farmer's profile",
+            message: "Error getting the database last record",
             detailed_message: err.message
           }));
         } else {
           res.contentType('application/json').status(200);
           res.send(JSON.stringify(result.rows));
         }
-        doRelease(connection, "GET /bananas");
+        doRelease(connection, "GET /database");
+      });
+  });
+});
+
+// HTTP Method: GET
+// URI        : /performance
+// Get last performance record
+app.get('/performance', function (req, res) {
+  doGetConnection(res, function(err, connection) {
+    if (err)
+      return;
+    connection.execute(
+      `select cpus "Number of CPUs", cpu_usage "CPU Usage", threads "Number of Threads", time_consumed "Time Consumed" from performance where ROWNUM < 2`,
+      function (err, result) {
+        if (err) {
+          res.set('Content-Type', 'application/json');
+          res.status(500).send(JSON.stringify({
+            status: 500,
+            message: "Error getting the performance last record",
+            detailed_message: err.message
+          }));
+        } else {
+          res.contentType('application/json').status(200);
+          res.send(JSON.stringify(result.rows));
+        }
+        doRelease(connection, "GET /performance");
+      });
+  });
+});
+
+// HTTP Method: GET
+// URI        : /resources
+// Get last resources record
+app.get('/resources', function (req, res) {
+  doGetConnection(res, function(err, connection) {
+    if (err)
+      return;
+    connection.execute(
+      `select tablespaces "Tablespaces", current_memory "Current Memory", max_memory "Max Memory", processes "Processes" from resources where ROWNUM < 2`, 
+      [], { fetchInfo: {"Tablespaces": {type: oracledb.STRING}} },
+      function (err, result) {
+        if (err) {
+          res.set('Content-Type', 'application/json');
+          res.status(500).send(JSON.stringify({
+            status: 500,
+            message: "Error getting the resources last record",
+            detailed_message: err.message
+          }));
+        } else {
+          res.contentType('application/json').status(200);
+          result.rows[0]["Tablespaces"] =  JSON.parse(result.rows[0]["Tablespaces"]);
+          res.send(JSON.stringify(result.rows));
+        }
+        doRelease(connection, "GET /resources");
+      });
+  });
+});
+
+// HTTP Method: GET
+// URI        : /activity
+// Get last activity record
+app.get('/activity', function (req, res) {
+  doGetConnection(res, function(err, connection) {
+    if (err)
+      return;
+    connection.execute(
+      `select sessions "Number of sessions", sql_requests "SQL Requests" from activity where ROWNUM < 2`, [], { fetchInfo: {"SQL Requests": {type: oracledb.STRING}} },
+      function (err, result) {
+        if (err) {
+          res.set('Content-Type', 'application/json');
+          res.status(500).send(JSON.stringify({
+            status: 500,
+            message: "Error getting the activity last record",
+            detailed_message: err.message
+          }));
+        } else {
+          res.contentType('application/json').status(200);
+          result.rows[0]["SQL Requests"] =  JSON.parse(result.rows[0]["SQL Requests"]);
+          res.send(JSON.stringify(result.rows[0]));
+        }
+        doRelease(connection, "GET /activity");
+      });
+  });
+});
+
+// HTTP Method: GET
+// URI        : /users
+// Get last users record
+app.get('/users', function (req, res) {
+  doGetConnection(res, function(err, connection) {
+    if (err)
+      return;
+    connection.execute(
+      `select users "Users", roles "Roles" from users where ROWNUM < 2`, 
+      [], { fetchInfo: {"Users": {type: oracledb.STRING}, "Roles": {type: oracledb.STRING}} },
+      function (err, result) {
+        if (err) {
+          res.set('Content-Type', 'application/json');
+          res.status(500).send(JSON.stringify({
+            status: 500,
+            message: "Error getting the users last record",
+            detailed_message: err.message
+          }));
+        } else {
+          res.contentType('application/json').status(200);
+          result.rows[0]["Users"] =  JSON.parse(result.rows[0]["Users"]);
+          result.rows[0]["Roles"] =  JSON.parse(result.rows[0]["Roles"]);
+          res.send(JSON.stringify(result.rows));
+        }
+        doRelease(connection, "GET /users");
       });
   });
 });
