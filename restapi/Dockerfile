@@ -15,6 +15,7 @@ COPY server.js /restapi/
 COPY dbConfig.js /restapi/
 RUN npm install oracledb && \
     npm install express && \
+    npm install cors && \
     npm install body-parser
 
 CMD exec node server.js

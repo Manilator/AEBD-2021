@@ -6,6 +6,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var oracledb = require('oracledb');
 const dbConfig = require('./dbConfig.js');
+const cors = require('cors')
 
 var app = express();
 app.use(bodyParser.json()); // Use body parser to parse JSON body
@@ -17,12 +18,12 @@ oracledb.outFormat = oracledb.OBJECT;
 // HTTP Method: GET
 // URI        : /database
 // Get last database record
-app.get('/database', function (req, res) {
+app.get('/database',cors(), function (req, res) {
   doGetConnection(res, function(err, connection) {
     if (err)
       return;
     connection.execute(
-      `select record_date "Date", name "Name", os "OS", version "Version" from database where ROWNUM < 2`,
+      `select record_date "Date", name "Name", os "OS", version "Version" from database where ROWNUM < 2 ORDER BY ID DESC`,
       function (err, result) {
         if (err) {
           res.set('Content-Type', 'application/json');
@@ -33,7 +34,7 @@ app.get('/database', function (req, res) {
           }));
         } else {
           res.contentType('application/json').status(200);
-          res.send(JSON.stringify(result.rows));
+          res.send(JSON.stringify(result.rows[0]));
         }
         doRelease(connection, "GET /database");
       });
@@ -43,12 +44,12 @@ app.get('/database', function (req, res) {
 // HTTP Method: GET
 // URI        : /performance
 // Get last performance record
-app.get('/performance', function (req, res) {
+app.get('/performance',cors(), function (req, res) {
   doGetConnection(res, function(err, connection) {
     if (err)
       return;
     connection.execute(
-      `select cpus "Number of CPUs", cpu_usage "CPU Usage", threads "Number of Threads", time_consumed "Time Consumed" from performance where ROWNUM < 2`,
+      `select cpus "Number of CPUs", cpu_usage "CPU Usage", threads "Number of Threads", time_consumed "Time Consumed" from performance where ROWNUM < 2 ORDER BY ID DESC`,
       function (err, result) {
         if (err) {
           res.set('Content-Type', 'application/json');
@@ -59,7 +60,7 @@ app.get('/performance', function (req, res) {
           }));
         } else {
           res.contentType('application/json').status(200);
-          res.send(JSON.stringify(result.rows));
+          res.send(JSON.stringify(result.rows[0]));
         }
         doRelease(connection, "GET /performance");
       });
@@ -69,12 +70,12 @@ app.get('/performance', function (req, res) {
 // HTTP Method: GET
 // URI        : /resources
 // Get last resources record
-app.get('/resources', function (req, res) {
+app.get('/resources',cors(), function (req, res) {
   doGetConnection(res, function(err, connection) {
     if (err)
       return;
     connection.execute(
-      `select tablespaces "Tablespaces", current_memory "Current Memory", max_memory "Max Memory", processes "Processes" from resources where ROWNUM < 2`, 
+      `select tablespaces "Tablespaces", current_memory "Current Memory", max_memory "Max Memory", processes "Processes" from resources where ROWNUM < 2 ORDER BY ID DESC`, 
       [], { fetchInfo: {"Tablespaces": {type: oracledb.STRING}} },
       function (err, result) {
         if (err) {
@@ -87,7 +88,7 @@ app.get('/resources', function (req, res) {
         } else {
           res.contentType('application/json').status(200);
           result.rows[0]["Tablespaces"] =  JSON.parse(result.rows[0]["Tablespaces"]);
-          res.send(JSON.stringify(result.rows));
+          res.send(JSON.stringify(result.rows[0]));
         }
         doRelease(connection, "GET /resources");
       });
@@ -97,12 +98,12 @@ app.get('/resources', function (req, res) {
 // HTTP Method: GET
 // URI        : /activity
 // Get last activity record
-app.get('/activity', function (req, res) {
+app.get('/activity',cors(), function (req, res) {
   doGetConnection(res, function(err, connection) {
     if (err)
       return;
     connection.execute(
-      `select sessions "Number of sessions", sql_requests "SQL Requests" from activity where ROWNUM < 2`, [], { fetchInfo: {"SQL Requests": {type: oracledb.STRING}} },
+      `select sessions "Number of sessions", sql_requests "SQL Requests" from activity where ROWNUM < 2 ORDER BY ID DESC`, [], { fetchInfo: {"SQL Requests": {type: oracledb.STRING}} },
       function (err, result) {
         if (err) {
           res.set('Content-Type', 'application/json');
@@ -124,12 +125,12 @@ app.get('/activity', function (req, res) {
 // HTTP Method: GET
 // URI        : /users
 // Get last users record
-app.get('/users', function (req, res) {
+app.get('/users',cors(), function (req, res) {
   doGetConnection(res, function(err, connection) {
     if (err)
       return;
     connection.execute(
-      `select users "Users", roles "Roles" from users where ROWNUM < 2`, 
+      `select users "Users", roles "Roles" from users where ROWNUM < 2 ORDER BY ID DESC`, 
       [], { fetchInfo: {"Users": {type: oracledb.STRING}, "Roles": {type: oracledb.STRING}} },
       function (err, result) {
         if (err) {
@@ -143,7 +144,7 @@ app.get('/users', function (req, res) {
           res.contentType('application/json').status(200);
           result.rows[0]["Users"] =  JSON.parse(result.rows[0]["Users"]);
           result.rows[0]["Roles"] =  JSON.parse(result.rows[0]["Roles"]);
-          res.send(JSON.stringify(result.rows));
+          res.send(JSON.stringify(result.rows[0]));
         }
         doRelease(connection, "GET /users");
       });
