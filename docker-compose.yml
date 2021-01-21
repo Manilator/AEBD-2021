@@ -14,13 +14,13 @@ services:
             - ora.conf
         networks:
             - db
-    webapp:
-        image: webapp
+    restapi:
+        image: restapi
         build: 
             dockerfile: Dockerfile
             context: ./restapi
         restart: always
-        container_name: aebd-webapp
+        container_name: aebd-restapi
         ports:
             - 3000:3000
         env_file:
@@ -35,5 +35,14 @@ services:
         container_name: aebd-wrapper
         networks:
             - db
+    # webapp:
+    #     image: webapp
+    #     build:
+    #         dockerfile: Dockerfile
+    #         context: ./webapp
+    #     restart: always
+    #     container_name: aebd-webapp
+    #     ports:
+    #         - 8080:8080
 networks:
     db:
