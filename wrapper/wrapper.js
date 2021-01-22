@@ -166,6 +166,15 @@ async function run() {
         AND ssn.paddr = prc.addr (+)`
         await sql_request(sql, connection, 'resources');
 
+        // total ram
+        sql = `select
+        max(value)/1024/1024 "TOTAL RAM"
+     from
+        dba_hist_osstat
+     where
+        stat_name = 'PHYSICAL_MEMORY_BYTES'`
+        await sql_request(sql, connection, 'resources');
+
         // Number of processes
         sql = `Select count(*) "Number of processes" from v$process
         where execution_type = 'PROCESS'`
@@ -236,8 +245,8 @@ where to_date(v.FIRST_LOAD_TIME,'YYYY-MM-DD hh24:mi:ss')>sysdate-1`
         tables_json.Tablespaces = resources.Tablespaces;
         // Resources
         result = await extConnection.execute(
-          'insert into resources (tablespaces, current_memory, max_memory, processes) values (:tv, :cv, :mv, :pv) returning id into :iv',
-          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, tv: JSON.stringify(tables_json), cv: resources['CURRENT SIZE'], mv: resources['MAXIMUM SIZE'], pv: resources['Number of processes'] },
+          'insert into resources (tablespaces, current_memory, max_memory, processes, total_ram) values (:tv, :cv, :mv, :pv, :trv) returning id into :iv',
+          { iv: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT }, tv: JSON.stringify(tables_json), cv: resources['CURRENT SIZE'], mv: resources['MAXIMUM SIZE'], pv: resources['Number of processes'], trv: resources['TOTAL RAM'] },
           { autoCommit: true });
         let r_id = result.outBinds.iv[0];
 
