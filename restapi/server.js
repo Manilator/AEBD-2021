@@ -75,7 +75,7 @@ app.get('/resources',cors(), function (req, res) {
     if (err)
       return;
     connection.execute(
-      `select tablespaces "Tablespaces", current_memory "Current Memory", max_memory "Max Memory", processes "Processes" from resources where ROWNUM < 2 ORDER BY ID DESC`, 
+      `select tablespaces "Tablespaces", current_memory "Current Memory", max_memory "Max Memory", processes "Processes", total_ram "Total Ram" from resources where ROWNUM < 2 ORDER BY ID DESC`, 
       [], { fetchInfo: {"Tablespaces": {type: oracledb.STRING}} },
       function (err, result) {
         if (err) {
@@ -147,6 +147,34 @@ app.get('/users',cors(), function (req, res) {
           res.send(JSON.stringify(result.rows[0]));
         }
         doRelease(connection, "GET /users");
+      });
+  });
+});
+
+
+// HTTP Method: GET
+// URI        : /performance
+// Get last performance record
+app.get('/performance/:REQUESTS',cors(), function (req, res) {
+  doGetConnection(res, function(err, connection) {
+    if (err)
+      return;
+    connection.execute(
+      `select cpus "Number of CPUs", cpu_usage "CPU Usage", threads "Number of Threads", time_consumed "Time Consumed" from performance where ROWNUM <= :r ORDER BY ID DESC`,
+      { r: req.params.REQUESTS },
+      function (err, result) {
+        if (err) {
+          res.set('Content-Type', 'application/json');
+          res.status(500).send(JSON.stringify({
+            status: 500,
+            message: "Error getting the performance last records",
+            detailed_message: err.message
+          }));
+        } else {
+          res.contentType('application/json').status(200);
+          res.send(JSON.stringify(result.rows));
+        }
+        doRelease(connection, "GET /performance" + req.params.REQUESTS);
       });
   });
 });
