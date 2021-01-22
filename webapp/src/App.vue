@@ -1,9 +1,15 @@
 <template>
   <div id="app">
     <div class="navbar">
-      <div>Oracle Database Info Dashboard</div>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/users">Users</a></li>
+      </ul>
       </div>
-    <router-view/>
+      <div class="main-container">
+        <div class="main-title">Oracle Database Status Dashboard</div>
+        <router-view/>
+      </div>
   </div>
 </template>
 
@@ -14,29 +20,39 @@ export default {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css?family=Muli');
 
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Muli', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex: row;
 }
 
-/* .navbar {
-  height: 50px;
-  padding: 10px;
-  font-size: 25px;
+.main-title {
+  margin: 15px;
+  margin-bottom: 0px;
+  font-size: 30px;
   font-weight: bold;
-  background-color: rgb(43, 43, 43);
-  position: relative;
-  margin-bottom: 10px;
-  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.349);
-} */
+}
 
-/* .navbar div {
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-  padding-left: 10px;
-}  */
+.navbar {
+  display: block;
+  text-align: center;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: auto;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 15px;
+  margin-right: 15px;
+}
 </style>
