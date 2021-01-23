@@ -1,50 +1,57 @@
 <template>
   <div>
+    <div class="main-subtitle">Users</div>
     <div class="horizontal-container">
-      <div class="database-info box">
+      <div class="box users-info">
         <div class="mini-title">Users</div>
         <div class="counter">{{ users.Users.length }}</div>
       </div>
-      <div class="performance-info box">
+      <div class="box roles-info">
         <div class="mini-title">Roles</div>
         <div class="counter">{{ roles.Roles.length }}</div>
       </div>
     </div>
     <div class="box">
-      <b-table
-        sticky-header
-        striped
-        hover
-        :items="users.Users"
-        :fields="usersFields"
-        :busy="usersBusy"
-        class="table-sm"
-      >
-        <template #table-busy>
-          <div class="text-center text-danger my-2">
-            <b-spinner class="align-middle"></b-spinner>
-            <strong>Loading...</strong>
-          </div>
-        </template>
-      </b-table>
+      <div class="text-box">
+        <div class="title">Users</div>
+        <b-table
+          sticky-header
+          dark
+          hover
+          small
+          :items="users.Users"
+          :fields="usersFields"
+          :busy="usersBusy"
+        >
+          <template #table-busy>
+            <div class="text-center text-danger my-2">
+              <b-spinner class="align-middle"></b-spinner>
+              <strong>Loading...</strong>
+            </div>
+          </template>
+        </b-table>
+      </div>
     </div>
     <div class="box">
-      <b-table
-        sticky-header
-        striped
-        hover
-        :items="roles.Roles"
-        :fields="rolesFields"
-        :busy="rolesBusy"
-        class="table-sm"
-      >
-        <template #table-busy>
-          <div class="text-center text-danger my-2">
-            <b-spinner class="align-middle"></b-spinner>
-            <strong>Loading...</strong>
-          </div>
-        </template>
-      </b-table>
+      <div class="text-box">
+        <div class="title">Roles</div>
+        <b-table
+          sticky-header
+          dark
+          hover
+          small
+          :items="roles.Roles"
+          :fields="rolesFields"
+          :busy="rolesBusy"
+        >
+          <template #table-busy>
+            <div class="text-center text-danger my-2">
+              <b-spinner class="align-middle"></b-spinner>
+              <strong>Loading...</strong>
+            </div>
+          </template>
+        </b-table>
+      </div>
     </div>
   </div>
 </template>
@@ -56,15 +63,6 @@ export default {
   name: 'MainPage',
   data () {
     return {
-      name: '',
-      version: '',
-      os: '',
-      date: '',
-      cpus: '',
-      threads: '',
-      cpu_usage: '',
-      sessions: '',
-      total_sql_24hr: '',
       users: {},
       roles: {},
       usersBusy: true,
@@ -108,9 +106,6 @@ export default {
     }
   },
   mounted () {
-    this.getDatabase()
-    this.getCurrentPerformance()
-    this.getActivity()
     this.getUsers()
   },
   methods: {
@@ -157,21 +152,39 @@ export default {
   justify-content: space-between;
 }
 
-.box {
-  border: solid;
-  padding: 10px;
-  margin: 15px;
-  width: inherit;
-  flex: 1;
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  padding-bottom: 5px;
 }
 
 .mini-title {
   font-size: 15px;
-  font-weight: lighter;
+  font-weight: bold;
 }
 
 .counter {
   font-size: 40px;
   text-align: right;
+  font-weight: bold;
+}
+
+.users-info {
+  background: rgb(103, 126, 243);
+  background: linear-gradient(
+    45deg,
+    rgba(103, 126, 243, 1) 0%,
+    rgba(89, 151, 254, 1) 49%,
+    rgba(52, 191, 253, 1) 100%
+  );
+}
+
+.roles-info {
+  background: rgb(255, 148, 139);
+  background: linear-gradient(
+    45deg,
+    rgba(255, 148, 139, 1) 0%,
+    rgba(255, 114, 136, 1) 100%
+  );
 }
 </style>

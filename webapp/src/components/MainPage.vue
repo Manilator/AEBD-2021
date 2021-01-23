@@ -2,72 +2,100 @@
   <div>
     <div class="horizontal-container">
       <div class="database-info box">
-        <div class="title">Database Info</div>
-        <div><b>Name:</b> {{ name }}</div>
-        <div><b>Version:</b> {{ version }}</div>
-        <div><b>OS:</b> {{ os }}</div>
-        <div><b>Record Date:</b> {{ date }}</div>
+        <div class="text-box">
+          <div class="title">Database Info</div>
+          <div><b>Name:</b> {{ name }}</div>
+          <div><b>Version:</b> {{ version }}</div>
+          <div><b>OS:</b> {{ os }}</div>
+          <div><b>Record Date:</b> {{ date }}</div>
+        </div>
       </div>
       <div class="performance-info box">
-        <div class="title">Current Performance</div>
-        <div><b>Number of CPUs:</b> {{ cpus }}</div>
-        <div><b>Number of Threads:</b> {{ threads }}</div>
-        <div><b>CPU Usage:</b> {{ cpu_usage }} %</div>
+        <div class="text-box">
+          <div class="title">Current Performance</div>
+          <div><b>Number of CPUs:</b> {{ cpus }}</div>
+          <div><b>Number of Threads:</b> {{ threads }}</div>
+          <div><b>CPU Usage:</b> {{ cpu_usage }} %</div>
+        </div>
       </div>
       <div class="activity-info box">
-        <div class="title">Activity</div>
-        <div><b>Active sessions: </b> {{ sessions }}</div>
-        <div><b>Total SQL Requests (24hr): </b> {{ total_sql_24hr }}</div>
-        <div><b>Total Users: </b> {{ this.total_users }}</div>
-        <div><b>Total Roles: </b> {{ this.total_roles }}</div>
+        <div class="text-box">
+          <div class="title">Activity</div>
+          <div><b>Active sessions: </b> {{ sessions }}</div>
+          <div><b>Total SQL Requests (24hr): </b> {{ total_sql_24hr }}</div>
+          <div><b>Total Users: </b> {{ this.total_users }}</div>
+          <div><b>Total Roles: </b> {{ this.total_roles }}</div>
+        </div>
       </div>
     </div>
     <div class="horizontal-container">
       <div class="box">
-        <div class="title">Ram Usage</div>
-        <doughnut-chart
-          v-if="this.loaded"
-          :labels="this.ramLabels"
-          :borderColor="this.borderColor"
-          :backgroundColor="this.backgroundColor"
-          :data="this.ramData"
-        ></doughnut-chart>
+        <div class="text-box">
+          <div class="title">Ram Usage</div>
+          <doughnut-chart
+            v-if="this.loaded"
+            :labels="this.ramLabels"
+            :borderColor="this.borderColor"
+            :backgroundColor="this.backgroundColor"
+            :data="this.ramData"
+            class="pie"
+          ></doughnut-chart>
+        </div>
       </div>
       <div class="box">
-        <div class="title">Total Space (MB)</div>
-        <doughnut-chart
-          v-if="this.loaded"
-          :labels="this.tsLabels"
-          :borderColor="this.borderColor"
-          :backgroundColor="this.backgroundColor"
-          :data="this.tsData"
-        ></doughnut-chart>
+        <div class="text-box">
+          <div class="title">Total Space (MB)</div>
+          <doughnut-chart
+            v-if="this.loaded"
+            :labels="this.tsLabels"
+            :borderColor="this.borderColor"
+            :backgroundColor="this.backgroundColor"
+            :data="this.tsData"
+            class="pie"
+          ></doughnut-chart>
+        </div>
+      </div>
+      <div class="box">
+        <div class="text-box">
+          <div class="title">Free Space (MB)</div>
+            <doughnut-chart
+              v-if="this.loaded"
+              :labels="this.tsLabels"
+              :borderColor="this.borderColor"
+              :backgroundColor="this.backgroundColor"
+              :data="this.fsData"
+              class="pie"
+            ></doughnut-chart>
+        </div>
       </div>
     </div>
     <div class="box">
-      <div class="title">Total Space (MB)</div>
-      <line-chart
-        v-if="this.loaded"
-        :labels="this.sLabels"
-        :borderColor="this.borderColor"
-        :backgroundColor="this.backgroundColor"
-        :data="this.sData"
-        :label="this.sLabel"
-      ></line-chart>
+      <div class="text-box">
+        <div class="title">Time Consumed</div>
+        <bar-chart
+          v-if="this.loaded"
+          :labels="this.sLabels"
+          :borderColor="this.lineBorderColor"
+          :backgroundColor="this.lineBackgroundColor"
+          :data="this.sData"
+          :label="this.sLabel"
+        ></bar-chart>
+      </div>
     </div>
+    <canvas id="canvas"></canvas>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 import DoughnutChart from '@/components/DoughnutChart'
-import LineChart from '@/components/LineChart'
+import BarChart from '@/components/BarChart'
 
 export default {
   name: 'MainPage',
   components: {
     DoughnutChart,
-    LineChart
+    BarChart
   },
   data () {
     return {
@@ -89,30 +117,35 @@ export default {
       ramLabels: ['Current Ram (MB)', 'Ram Left (MB)'],
       tsLabels: [],
       borderColor: [
-        'rgba(255,99,132,1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(117, 245, 66, 1)',
-        'rgba(245, 233, 66, 1)'
+        'rgb(79, 161, 254,1)',
+        'rgba(255, 119, 137, 1)',
+        'rgba(26, 212, 190, 1)',
+        'rgba(157, 126, 249, 1)'
       ],
       backgroundColor: [
-        'rgba(255, 99, 132, 0.2)',
-        'rgba(54, 162, 235, 0.2)',
-        'rgba(117, 245, 66, 0.2)',
-        'rgba(245, 233, 66, 0.2)'
+        'rgb(79, 161, 254,1)',
+        'rgba(255, 119, 137, 1)',
+        'rgba(26, 212, 190, 1)',
+        'rgba(157, 126, 249, 1)'
       ],
+      lineBorderColor: 'rgba(26, 212, 190, 1)',
+      lineBackgroundColor: ' rgba(26, 212, 190, 1)',
       ramData: [],
       tsData: [],
-      sLabel: 'Total Space (MB)',
+      fsData: [],
+      sLabel: 'Time Consumed (ms)',
       sLabels: [],
       sData: []
     }
   },
   mounted () {
+    this.makeGradient()
     this.getDatabase()
     this.getCurrentPerformance()
     this.getActivity()
     this.getUsers()
     this.getResources()
+    this.getNRecords(30)
   },
   watch: {},
   methods: {
@@ -162,13 +195,60 @@ export default {
         this.resources.Tablespaces.Tablespaces.map(x =>
           this.tsData.push(x['Total MB'])
         )
-        console.log(this.tsLabels)
-
-        this.loaded = true
+        this.resources.Tablespaces.Tablespaces.map(x =>
+          this.fsData.push(x['Free MB'])
+        )
       })
     },
-    getNPerformance (n) {
-      
+    async getNRecords (n) {
+      await axios.get(`http://localhost:3000/database/${n}`).then(response => {
+        response.data
+          .reverse()
+          .map(x => this.sLabels.push(x['Date'].substr(11, 18)))
+        console.log(this.sLabels)
+      })
+      await axios
+        .get(`http://localhost:3000/performance/${n}`)
+        .then(response => {
+          response.data.reverse().map(x => this.sData.push(x['Time Consumed']))
+          console.log(this.sData)
+        })
+      this.loaded = true
+    },
+    makeGradient () {
+      var gradientFill = document
+        .getElementById('canvas')
+        .getContext('2d')
+        .createLinearGradient(500, 0, 100, 0)
+      gradientFill.addColorStop(0, 'rgba(103, 126, 243, 1)')
+      gradientFill.addColorStop(1, 'rgba(52, 191, 253, 1)')
+      this.backgroundColor[0] = gradientFill
+
+      var gradientFill2 = document
+        .getElementById('canvas')
+        .getContext('2d')
+        .createLinearGradient(500, 0, 100, 0)
+      gradientFill2.addColorStop(0, 'rgba(255, 148, 139, 1)')
+      gradientFill2.addColorStop(1, ' rgba(255, 114, 136, 1)')
+      this.backgroundColor[1] = gradientFill2
+
+      var gradientFill3 = document
+        .getElementById('canvas')
+        .getContext('2d')
+        .createLinearGradient(0, 0, 2000, 0)
+      gradientFill3.addColorStop(0, 'rgba(12, 182, 225, 1)')
+      gradientFill3.addColorStop(1, 'rgba(37, 235, 163, 1)')
+      this.backgroundColor[2] = gradientFill3
+      this.lineBackgroundColor = gradientFill3
+      this.lineBorderColor = gradientFill3
+
+      var gradientFill4 = document
+        .getElementById('canvas')
+        .getContext('2d')
+        .createLinearGradient(500, 0, 100, 0)
+      gradientFill4.addColorStop(0, 'rgba(131, 125, 252, 1)')
+      gradientFill4.addColorStop(1, 'rgba(235, 130, 239, 1)')
+      this.backgroundColor[3] = gradientFill4
     }
   }
 }
@@ -181,16 +261,13 @@ export default {
   flex-direction: row;
 }
 
-.box {
-  border: solid;
-  padding: 10px;
-  margin: 15px;
-  flex: 1;
-}
-
 .title {
   font-size: 20px;
   font-weight: bold;
   padding-bottom: 5px;
+}
+
+.pie {
+  height: 85%;
 }
 </style>

@@ -1,8 +1,8 @@
 <script>
-import { Line } from 'vue-chartjs'
+import { Bar } from 'vue-chartjs'
 
 export default {
-  extends: Line,
+  extends: Bar,
   props: ['labels', 'borderColor', 'backgroundColor', 'data', 'label'],
   data () {
     return {
@@ -12,10 +12,10 @@ export default {
           {
             label: this.label,
             data: this.data,
-            fill: true,
             borderColor: this.borderColor,
             backgroundColor: this.backgroundColor,
-            borderWidth: 1
+            borderWidth: 1,
+            pointBorderColor: '#2554FF'
           }
         ]
       },
