@@ -20,19 +20,19 @@ services:
             dockerfile: Dockerfile
             context: ./restapi
         restart: always
-        container_name: aebd-restapi
+        container_name: restapi
         ports:
             - 3000:3000
         env_file:
             - restapi/envfile.list
         networks:
             - db
-    wrapper:
-        image: wrapper
+    scraper:
+        image: scraper
         build:
             dockerfile: Dockerfile
-            context: ./wrapper
-        container_name: aebd-wrapper
+            context: ./scraper
+        container_name: scraper
         networks:
             - db
     # webapp:
@@ -41,8 +41,10 @@ services:
     #         dockerfile: Dockerfile
     #         context: ./webapp
     #     restart: always
-    #     container_name: aebd-webapp
+    #     container_name: webapp
     #     ports:
     #         - 8080:8080
+    #     networks:
+    #         - db
 networks:
     db:
